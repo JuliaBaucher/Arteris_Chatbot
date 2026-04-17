@@ -57,7 +57,7 @@ The Arteris Assistant is designed to:
 ## 4. Architecture
 
 ### 4.1 High-Level Architecture
-
+```
 Frontend UI
    |
    v
@@ -85,7 +85,7 @@ API Gateway HTTP API
                                 |
                                 +--> DynamoDB scans/queries
                                 +--> CloudWatch Logs
-
+```
 ---
 
 ### 4.2 Component Description
@@ -142,7 +142,7 @@ API Gateway HTTP API
 ---
 
 ### Retrieval Flow
-
+```
 User question
    |
    +--> deterministic hint? → exact match
@@ -152,7 +152,7 @@ User question
          +--> Arteris-related → hybrid retrieval
          |
          +--> generic → LLM only
-
+```
 ---
 
 ### Retrieval Scoring Logic
@@ -165,7 +165,7 @@ final_score = (0.7 * semantic_score) + (0.3 * keyword_score)
 ---
 
 ### Conversational Memory Flow
-
+```
 Incoming request
    |
    +--> load persistent memory
@@ -179,7 +179,7 @@ prompt assembly
 store new messages
    |
    +--> update summary periodically
-
+```
 ---
 
 ## 6. Functional Flow
@@ -262,7 +262,7 @@ Optional debug:
 ## 7. Architecture Overview (Detailed)
 
 ### Textual architecture diagram
-
+```
 Frontend UI
    |
    v
@@ -275,7 +275,7 @@ API Gateway HTTP API
    +--> POST /escalate ----> ARTERIS-escalate-handler
    |
    +--> GET /metrics ------> ARTERIS-metrics-handler
-
+```
 ---
 
 ### End-to-End Data Flow
@@ -370,18 +370,18 @@ CloudWatch
 ## 10. API Examples
 
 ### Chat
-
+```
     curl -X POST "$API_URL/chat" \
       -H "Content-Type: application/json" \
       -d '{
         "session_id": "sess-001",
         "message": "What is FlexNoC?"
       }'
-
+```
 ---
 
 ### Feedback
-
+```
     curl -X POST "$API_URL/feedback" \
       -H "Content-Type: application/json" \
       -d '{
@@ -389,11 +389,11 @@ CloudWatch
         "response_id": "resp-001",
         "feedback": "like"
       }'
-
+```
 ---
 
 ### Escalate
-
+```
     curl -X POST "$API_URL/escalate" \
       -H "Content-Type: application/json" \
       -d '{
@@ -401,7 +401,7 @@ CloudWatch
         "user_message": "Need help",
         "assistant_response": "..."
       }'
-
+```
 ---
 
 ## 11. Key Design Principles
