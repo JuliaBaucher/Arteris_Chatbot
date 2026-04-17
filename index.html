@@ -125,7 +125,16 @@ html,body{height:100%;font-family:var(--font);background:var(--bg);color:var(--t
   border-radius:var(--radius-md);padding:12px 16px;margin-top:8px;flex-shrink:0;
   box-shadow:var(--shadow-sm);
 }
-#metrics-panel h3{color:var(--text-secondary);font-size:11px;font-weight:700;margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em}
+#metrics-panel h3{color:var(--text-secondary);font-size:11px;font-weight:700;margin-bottom:10px;text-transform:uppercase;letter-spacing:.06em}
+.metrics-group-label{
+  font-size:.68rem;font-weight:700;color:var(--text-muted);
+  text-transform:uppercase;letter-spacing:.08em;
+  margin:8px 0 6px;display:flex;align-items:center;gap:8px;
+}
+.metrics-group-label::after{
+  content:'';flex:1;height:1px;background:var(--border);
+}
+.metrics-group-label:first-of-type{margin-top:0}
 #metrics-grid{display:flex;flex-wrap:wrap;gap:6px}
 .metric-chip{
   background:var(--surface-2);border:1px solid var(--border);
@@ -576,25 +585,62 @@ $('metrics-btn').addEventListener('click', () => {
 });
 function renderMetrics(remote) {
   metricsGrid.innerHTML = '';
-  const items = [
-    ['Requests', sessionMetrics.total], ['Likes', sessionMetrics.likes],
-    ['Dislikes', sessionMetrics.dislikes], ['Escalations', sessionMetrics.escalations],
-    ['KB', sessionMetrics.kb], ['LLM', sessionMetrics.general], ['Clarifications', sessionMetrics.clarification]
+
+  // --- Session group ---
+  const sessionLabel = el('div','metrics-group-label'); txt(sessionLabel,'This Session');
+  metricsGrid.appendChild(sessionLabel);
+
+  const sessionItems = [
+    ['Requests', sessionMetrics.total],
+    ['Likes', sessionMetrics.likes],
+    ['Dislikes', sessionMetrics.dislikes],
+    ['Escalations', sessionMetrics.escalations],
+    ['KB answers', sessionMetrics.kb],
+    ['LLM answers', sessionMetrics.general],
+    ['Clarifications', sessionMetrics.clarification]
   ];
-  if (remote) Object.entries(remote).forEach(([k,v]) => items.push([k, v]));
-  items.forEach(([k, v]) => {
-    const chip = el('div', 'metric-chip');
+  const sessionRow = el('div',''); sessionRow.style.cssText='display:flex;flex-wrap:wrap;gap:6px;width:100%';
+  sessionItems.forEach(([k, v]) => {
+    const chip = el('div','metric-chip');
     chip.textContent = k + ': ';
     const s = el('span'); txt(s, v); chip.appendChild(s);
-    metricsGrid.appendChild(chip);
+    sessionRow.appendChild(chip);
   });
+  metricsGrid.appendChild(sessionRow);
+
+  // --- Persistent group (from backend) ---
+  if (remote && Object.keys(remote).length > 0) {
+    const persistLabel = el('div','metrics-group-label'); txt(persistLabel,'All Time');
+    metricsGrid.appendChild(persistLabel);
+
+    // Clean up snake_case keys to readable labels
+    const labelMap = {
+      total_requests:'Total Requests', unique_users:'Unique Users',
+      active_sessions:'Active Sessions', positive_feedback:'Positive Feedback',
+      negative_feedback:'Negative Feedback', escalations:'Escalations',
+      deterministic_kb_responses:'Deterministic KB', kb_rag_responses:'KB RAG',
+      general_llm_responses:'General LLM', clarification_responses:'Clarifications'
+    };
+    const persistRow = el('div',''); persistRow.style.cssText='display:flex;flex-wrap:wrap;gap:6px;width:100%';
+    Object.entries(remote).forEach(([k, v]) => {
+      const chip = el('div','metric-chip');
+      const label = labelMap[k] || k.replace(/_/g,' ');
+      chip.textContent = label + ': ';
+      const s = el('span'); txt(s, v); chip.appendChild(s);
+      persistRow.appendChild(chip);
+    });
+    metricsGrid.appendChild(persistRow);
+  }
 }
 async function fetchMetrics() {
   renderMetrics(null);
   try {
     const res = await fetch(METRICS_API_URL);
-    if (res.ok) renderMetrics(await res.json());
-  } catch {}
+    if (res.ok) {
+      const data = await res.json();
+      renderMetrics(data);
+    }
+  } catch { /* metrics panel stays with session data only */ }
 }
 
 // ===== WELCOME =====
