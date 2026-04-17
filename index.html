@@ -105,13 +105,13 @@ html,body{height:100%;font-family:var(--font);background:var(--bg);color:var(--t
 #suggestions-section{flex-shrink:0;margin-top:10px}
 #suggestions-toggle{
   width:100%;display:flex;align-items:center;justify-content:space-between;
-  background:var(--surface-2);border:1px solid var(--border);
+  background:#0B2A3E;border:1px solid #0B2A3E;
   border-radius:20px;padding:8px 16px;cursor:pointer;
-  font-size:.8rem;font-weight:600;color:var(--text-muted);
+  font-size:.8rem;font-weight:600;color:#ffffff;
   text-transform:uppercase;letter-spacing:.06em;
   transition:background .15s,color .15s;
 }
-#suggestions-toggle:hover{background:var(--border);color:var(--text)}
+#suggestions-toggle:hover{background:#0d3350;color:#fff}
 #suggestions-toggle:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
 #chevron{transition:transform .25s;font-size:12px}
 #chevron.open{transform:rotate(180deg)}
@@ -317,7 +317,7 @@ html,body{height:100%;font-family:var(--font);background:var(--bg);color:var(--t
       </div>
       <div id="brand-text">
         <div id="brand-title">ARTERIS <span id="brand-ip">IP</span></div>
-        <div id="brand-subtitle">System IP Assistant</div>
+        <div id="brand-subtitle">Powered by Arteris Knowledge Base</div>
       </div>
     </div>
     <div id="header-controls">
@@ -576,7 +576,10 @@ function addUserMessage(text) {
 function addAssistantMessage(data) {
   messages.push({...data, role:'assistant'});
   const row = el('div','msg-row assistant');
-  const avatar = el('div','msg-avatar'); txt(avatar,'IP');
+  if (data.id !== 'welcome') {
+    const avatar = el('div','msg-avatar'); txt(avatar,'IP');
+    row.appendChild(avatar);
+  }
   const col = el('div','msg-col');
   const bubble = el('div','msg-bubble'); txt(bubble, data.text);
   col.appendChild(bubble);
@@ -603,7 +606,7 @@ function addAssistantMessage(data) {
     col.appendChild(srcWrap);
   }
   if (data.response_id) col.appendChild(buildActions(data));
-  row.appendChild(avatar); row.appendChild(col);
+  row.appendChild(col);
   chatArea.appendChild(row);
   scrollBottom();
 }
@@ -617,7 +620,7 @@ function addErrorMessage(text) {
   const col = el('div','msg-col');
   const bubble = el('div','msg-bubble'); txt(bubble, text);
   col.appendChild(bubble);
-  row.appendChild(avatar); row.appendChild(col);
+  row.appendChild(col);
   chatArea.appendChild(row);
   scrollBottom();
 }
