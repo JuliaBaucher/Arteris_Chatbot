@@ -433,10 +433,11 @@ html,body{height:100%;font-family:var(--font);background:var(--bg);color:var(--t
 
 <script>
 // ===== ENDPOINTS =====
-const CHAT_API_URL     = 'https://YOUR_API_GATEWAY_URL/chat';
-const FEEDBACK_API_URL = 'https://YOUR_API_GATEWAY_URL/feedback';
-const ESCALATE_API_URL = 'https://YOUR_API_GATEWAY_URL/escalate';
-const METRICS_API_URL  = 'https://YOUR_API_GATEWAY_URL/metrics';
+const API_BASE         = 'https://YOUR_API_GATEWAY_URL';
+const CHAT_API_URL     = API_BASE + '/chat';
+const FEEDBACK_API_URL = API_BASE + '/feedback';
+const ESCALATE_API_URL = API_BASE + '/escalate';
+const METRICS_API_URL  = API_BASE + '/metrics';
 
 // ===== PREDEFINED QUESTIONS =====
 const PREDEFINED_QUESTIONS = [
@@ -591,7 +592,7 @@ async function fetchMetrics() {
 // ===== WELCOME =====
 function addWelcome() {
   addAssistantMessage({
-    id:'welcome', response_id:null,
+    id:'welcome', response_id:'welcome',
     text:"Hi, I'm the Arteris IP assistant. How can I help you today?",
     timestamp:new Date(), mode:null, sources:[], original_user_message:''
   });
@@ -669,6 +670,8 @@ function addErrorMessage(text) {
 // ===== ACTION BUTTONS =====
 function buildActions(data) {
   const wrap = el('div','msg-actions');
+
+  // Copy
   const copyBtn = el('button','act-btn');
   copyBtn.setAttribute('aria-label','Copy response');
   txt(copyBtn,'📋 Copy');
@@ -680,32 +683,54 @@ function buildActions(data) {
   });
   wrap.appendChild(copyBtn);
 
+  // Like
   const likeBtn = el('button','act-btn');
   likeBtn.setAttribute('aria-label','Helpful');
-  txt(likeBtn,'👍 Helpful');
+  txt(likeBtn,'👍 Like');
   likeBtn.addEventListener('click', () => {
     if (likeBtn.classList.contains('liked')) return;
     likeBtn.classList.add('liked'); dislikeBtn.classList.remove('disliked');
     sessionMetrics.likes++;
+    if (metricsEnabled) renderMetrics(null);
     postFeedback(data.response_id, 'like');
   });
   wrap.appendChild(likeBtn);
 
+  // Dislike
   const dislikeBtn = el('button','act-btn');
   dislikeBtn.setAttribute('aria-label','Not helpful');
-  txt(dislikeBtn,'👎 Not helpful');
+  txt(dislikeBtn,'👎 Dislike');
   dislikeBtn.addEventListener('click', () => {
     if (dislikeBtn.classList.contains('disliked')) return;
     dislikeBtn.classList.add('disliked'); likeBtn.classList.remove('liked');
     sessionMetrics.dislikes++;
+    if (metricsEnabled) renderMetrics(null);
     postFeedback(data.response_id, 'dislike');
   });
   wrap.appendChild(dislikeBtn);
 
+  // Escalate
   const escBtn = el('button','act-btn');
   escBtn.setAttribute('aria-label','Escalate to expert');
   txt(escBtn,'🔗 Escalate');
-  escBtn.addEventListener('click', () => postEscalate(data));
+  escBtn.addEventListener('click', () => {
+    postEscalate(data);
+    // Show inline escalation confirmation in chat
+    const escRow = el('div','msg-row assistant');
+    const escAvatar = el('div','msg-avatar'); txt(escAvatar,'IP');
+    const escCol = el('div','msg-col');
+    const escBubble = el('div','msg-bubble');
+    escBubble.style.background = 'rgba(0,48,135,.07)';
+    escBubble.style.borderColor = 'rgba(0,48,135,.2)';
+    escBubble.style.color = 'var(--navy)';
+    txt(escBubble,'✅ An expert will join the conversation shortly.');
+    escCol.appendChild(escBubble);
+    escRow.appendChild(escAvatar); escRow.appendChild(escCol);
+    chatArea.appendChild(escRow);
+    scrollBottom();
+    escBtn.disabled = true;
+    escBtn.style.opacity = '.5';
+  });
   wrap.appendChild(escBtn);
   return wrap;
 }
@@ -795,7 +820,7 @@ async function postFeedback(response_id, feedback) {
       method:'POST', headers:{'Content-Type':'application/json'},
       body:JSON.stringify({session_id:SESSION_ID, response_id, feedback})
     });
-    toast(feedback === 'like' ? 'Thanks for the feedback!' : 'Feedback noted.');
+    toast(feedback === 'like' ? '👍 Feedback saved — thank you!' : '👎 Feedback saved — noted.');
   } catch { toast('Could not send feedback.'); }
 }
 
@@ -808,8 +833,7 @@ async function postEscalate(data) {
     });
     sessionMetrics.escalations++;
     if (metricsEnabled) renderMetrics(null);
-    toast('An expert will join the conversation shortly.');
-  } catch { toast('Could not escalate. Please try again.'); }
+  } catch { /* escalation still shows UI message even if request fails */ }
 }
 
 // ===== CLEAR =====
