@@ -10,33 +10,23 @@
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  /* Arteris IP brand */
   --red:#E8000B;
   --red-dark:#c40009;
   --orange:#E8610A;
   --navy:#003087;
   --navy-deep:#0A1628;
-
-  /* Light mode surfaces */
   --bg:#F5F7FA;
   --surface:#FFFFFF;
   --surface-2:#EEF1F6;
   --surface-3:#E4E8F0;
-
-  /* Light mode text */
   --text:#1A1A2E;
   --text-secondary:#3D4460;
   --text-muted:#6B7280;
-
-  /* Light mode borders */
   --border:#DDE2EC;
   --border-strong:#C4CBDA;
-
-  /* Semantic */
   --primary:var(--red);
   --primary-dark:var(--red-dark);
   --accent:#FDECEA;
-
   --font:'Inter',sans-serif;
   --radius-sm:6px;
   --radius-md:12px;
@@ -47,26 +37,77 @@
   --shadow-lg:0 8px 24px rgba(26,26,46,.1),0 4px 8px rgba(26,26,46,.04);
 }
 [data-theme="dark"]{
-  /* Dark mode — pure Arteris navy family, never gray/black */
   --bg:#0A1628;
   --surface:#0D1F3C;
   --surface-2:#112347;
   --surface-3:#162B55;
-
   --text:#E8EDF5;
   --text-secondary:#A8B4CC;
   --text-muted:#6B7E9E;
-
   --border:#1E3358;
   --border-strong:#2A4470;
-
   --accent:rgba(232,0,11,.15);
-
   --shadow-sm:0 1px 3px rgba(0,0,0,.3);
   --shadow-md:0 4px 12px rgba(0,0,0,.35);
   --shadow-lg:0 8px 24px rgba(0,0,0,.4);
 }
 html,body{height:100%;font-family:var(--font);background:var(--bg);color:var(--text);font-size:15px;-webkit-font-smoothing:antialiased;line-height:1.5}
+
+/* AUTH SCREEN */
+#auth-screen{
+  position:fixed;inset:0;background:#000;color:#fff;z-index:99999;
+  display:flex;align-items:center;justify-content:center;
+}
+#auth-center{
+  text-align:center;padding:24px;
+}
+#auth-title{
+  font-size:2rem;font-weight:800;letter-spacing:-.03em;
+}
+#auth-subtitle{
+  margin-top:14px;font-size:1rem;color:#b8b8b8;
+}
+#auth-panel{
+  position:absolute;top:24px;right:24px;
+  width:min(360px,calc(100vw - 32px));
+  background:rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.14);
+  border-radius:16px;
+  padding:18px;
+  backdrop-filter:blur(10px);
+}
+#auth-form{
+  display:flex;flex-direction:column;gap:12px;
+}
+.auth-label{
+  font-size:.78rem;font-weight:700;color:#d0d0d0;text-align:left;
+  text-transform:uppercase;letter-spacing:.08em;
+}
+.auth-input{
+  width:100%;background:#0f0f0f;color:#fff;
+  border:1px solid #343434;border-radius:10px;
+  padding:12px 14px;font-size:.92rem;outline:none;
+}
+.auth-input:focus{
+  border-color:var(--red);
+  box-shadow:0 0 0 3px rgba(232,0,11,.18);
+}
+#auth-btn{
+  background:var(--red);color:#fff;border:none;cursor:pointer;
+  border-radius:10px;padding:12px 14px;font-size:.9rem;font-weight:700;
+  transition:background .15s,transform .1s;
+}
+#auth-btn:hover{background:var(--red-dark);transform:translateY(-1px)}
+#auth-btn:disabled{opacity:.55;cursor:not-allowed;transform:none}
+#auth-error{
+  margin-top:10px;font-size:.82rem;color:#ff8d8d;min-height:20px;
+}
+#auth-note{
+  margin-top:8px;font-size:.75rem;color:#999;text-align:left;
+}
+
+/* APP */
+#app-shell[hidden]{display:none!important}
 
 /* ===== PAGE SHELL ===== */
 #page{
@@ -109,6 +150,12 @@ html,body{height:100%;font-family:var(--font);background:var(--bg);color:var(--t
 .hdr-btn:hover{background:var(--surface-2);color:var(--text)}
 .hdr-btn:focus-visible{outline:2px solid var(--red);outline-offset:2px}
 .hdr-btn.active{color:var(--red);background:var(--accent)}
+
+#logout-btn{
+  width:auto;padding:0 12px;border:1px solid var(--border);
+  border-radius:var(--radius-sm);font-size:.8rem;font-weight:700;
+}
+#logout-btn:hover{background:var(--surface-2)}
 
 /* ===== DEBUG PANEL ===== */
 #debug-panel{
@@ -356,11 +403,13 @@ html,body{height:100%;font-family:var(--font);background:var(--bg);color:var(--t
 }
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
-/* ===== RESPONSIVE ===== */
 @media(max-width:600px){
   #page{padding:0 12px}
   .msg-col{max-width:88%}
   #suggestions-grid{grid-template-columns:1fr 1fr}
+  #auth-panel{position:static;margin:24px auto 0}
+  #auth-screen{flex-direction:column;padding:18px;justify-content:flex-start}
+  #auth-center{margin-top:80px}
 }
 @media(max-width:400px){
   #suggestions-grid{grid-template-columns:1fr}
@@ -368,112 +417,127 @@ html,body{height:100%;font-family:var(--font);background:var(--bg);color:var(--t
 </style>
 </head>
 <body>
-<div id="page">
 
-  <!-- HEADER -->
-  <header id="site-header">
-    <div id="header-brand">
-      <div id="brand-text">
-        <div id="brand-title">ARTERIS <span id="brand-ip">IP</span></div>
-        <div id="brand-subtitle">Powered by Arteris Knowledge Base</div>
-      </div>
-    </div>
-    <div id="header-controls">
-      <button class="hdr-btn" id="metrics-btn" aria-label="Toggle metrics" title="Metrics">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-      </button>
-      <button class="hdr-btn" id="debug-btn" aria-label="Toggle debug" title="Debug">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-      </button>
-      <button class="hdr-btn" id="theme-btn" aria-label="Toggle dark mode" title="Toggle theme">
-        <svg id="theme-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
-      </button>
-    </div>
-  </header>
-
-  <!-- DEBUG -->
-  <div id="debug-panel" hidden aria-live="polite">
-    <h3>Debug — Last Response</h3>
-    <div id="debug-body"></div>
+<div id="auth-screen">
+  <div id="auth-panel">
+    <form id="auth-form">
+      <label class="auth-label" for="auth-username">Username</label>
+      <input id="auth-username" class="auth-input" type="text" autocomplete="username" />
+      <label class="auth-label" for="auth-password">Password</label>
+      <input id="auth-password" class="auth-input" type="password" autocomplete="current-password" />
+      <button id="auth-btn" type="submit">Login</button>
+      <div id="auth-error" aria-live="polite"></div>
+      <div id="auth-note">Authorized users only.</div>
+    </form>
   </div>
-
-  <!-- METRICS -->
-  <div id="metrics-panel" hidden aria-live="polite">
-    <h3>Session Metrics</h3>
-    <div id="metrics-grid"></div>
+  <div id="auth-center">
+    <div id="auth-title">This site requires user authentication</div>
+    <div id="auth-subtitle">Please sign in to access the chatbot.</div>
   </div>
+</div>
 
-  <!-- SUGGESTIONS -->
-  <section id="suggestions-section" aria-label="Suggested questions">
-    <button id="suggestions-toggle" aria-expanded="true" aria-controls="suggestions-grid">
-      <span>Suggested Questions</span>
-      <span id="chevron" class="open" aria-hidden="true">▼</span>
-    </button>
-    <div id="suggestions-grid" role="list"></div>
-  </section>
+<div id="app-shell" hidden>
+  <div id="page">
 
-  <!-- CHAT -->
-  <main id="chat-area" role="log" aria-live="polite" aria-label="Chat conversation"></main>
-
-  <!-- INPUT -->
-  <div id="input-section">
-    <div id="input-container">
-      <div id="input-top">
-        <textarea id="chat-input" placeholder="Ask about Arteris products, NoC technology, solutions…" aria-label="Type your message" rows="1" maxlength="4000"></textarea>
+    <header id="site-header">
+      <div id="header-brand">
+        <div id="brand-text">
+          <div id="brand-title">ARTERIS <span id="brand-ip">IP</span></div>
+          <div id="brand-subtitle">Protected access</div>
+        </div>
       </div>
-      <div id="input-bottom">
-        <span id="char-count" aria-live="polite">0 / 4000</span>
-        <div id="input-actions">
-          <button id="clear-btn" aria-label="Clear chat">Clear</button>
-          <button id="send-btn" aria-label="Send message" disabled>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-            Send
-          </button>
+      <div id="header-controls">
+        <button class="hdr-btn" id="metrics-btn" aria-label="Toggle metrics" title="Metrics">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        </button>
+        <button class="hdr-btn" id="debug-btn" aria-label="Toggle debug" title="Debug">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        </button>
+        <button class="hdr-btn" id="theme-btn" aria-label="Toggle dark mode" title="Toggle theme">
+          <svg id="theme-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+        </button>
+        <button class="hdr-btn" id="logout-btn" aria-label="Logout" title="Logout">Logout</button>
+      </div>
+    </header>
+
+    <div id="debug-panel" hidden aria-live="polite">
+      <h3>Debug — Last Response</h3>
+      <div id="debug-body"></div>
+    </div>
+
+    <div id="metrics-panel" hidden aria-live="polite">
+      <h3>Session Metrics</h3>
+      <div id="metrics-grid"></div>
+    </div>
+
+    <section id="suggestions-section" aria-label="Suggested questions">
+      <button id="suggestions-toggle" aria-expanded="true" aria-controls="suggestions-grid">
+        <span>Suggested Questions</span>
+        <span id="chevron" class="open" aria-hidden="true">▼</span>
+      </button>
+      <div id="suggestions-grid" role="list"></div>
+    </section>
+
+    <main id="chat-area" role="log" aria-live="polite" aria-label="Chat conversation"></main>
+
+    <div id="input-section">
+      <div id="input-container">
+        <div id="input-top">
+          <textarea id="chat-input" placeholder="Ask about Arteris products, NoC technology, solutions…" aria-label="Type your message" rows="1" maxlength="4000"></textarea>
+        </div>
+        <div id="input-bottom">
+          <span id="char-count" aria-live="polite">0 / 4000</span>
+          <div id="input-actions">
+            <button id="clear-btn" aria-label="Clear chat">Clear</button>
+            <button id="send-btn" aria-label="Send message" disabled>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+              Send
+            </button>
+          </div>
         </div>
       </div>
     </div>
+
+    <footer id="site-footer">
+      <button id="footer-toggle" aria-expanded="false" aria-controls="footer-body">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        How this works
+      </button>
+      <div id="footer-body" hidden>
+        This page is protected by a simple authentication layer. After login, the browser sends a token with each API request. The backend validates the token before processing the chatbot request.
+      </div>
+    </footer>
+
   </div>
-
-  <!-- FOOTER -->
-  <footer id="site-footer">
-    <button id="footer-toggle" aria-expanded="false" aria-controls="footer-body">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-      How this works
-    </button>
-    <div id="footer-body" hidden>
-      This page is a static single-file web application. When you send a message, the browser makes a POST request to an AWS API Gateway endpoint. The request is handled by an AWS Lambda function, which retrieves relevant knowledge from the Arteris knowledge base, calls a large language model, and returns a structured JSON response.
-    </div>
-  </footer>
-
 </div>
+
 <div id="toast" role="status" aria-live="polite"></div>
 
 <script>
-// ===== ENDPOINTS =====
 const API_BASE         = 'https://e7qmvgyu88.execute-api.eu-west-1.amazonaws.com';
+const LOGIN_API_URL    = API_BASE + '/login';
 const CHAT_API_URL     = API_BASE + '/chat';
 const FEEDBACK_API_URL = API_BASE + '/feedback';
 const ESCALATE_API_URL = API_BASE + '/escalate';
 const METRICS_API_URL  = API_BASE + '/metrics';
 
-// ===== PREDEFINED QUESTIONS =====
 const PREDEFINED_QUESTIONS = [
-  { question:"What is Arteris?",                               tag:"Company",  retrieval_hint:{ui_question_key:"what_is_arteris",                    deterministic_retrieval:true}},
-  { question:"Why does Arteris matter for modern SoC design?", tag:"Company",  retrieval_hint:{ui_question_key:"why_arteris_matters",                deterministic_retrieval:true}},
-  { question:"What products does Arteris offer?",              tag:"Products", retrieval_hint:{ui_question_key:"what_products_does_arteris_offer",    deterministic_retrieval:true}},
-  { question:"What is FlexNoC?",                               tag:"Products", retrieval_hint:{ui_question_key:"what_is_flexnoc",                     deterministic_retrieval:true}},
-  { question:"What is Ncore?",                                 tag:"Products", retrieval_hint:{ui_question_key:"what_is_ncore",                       deterministic_retrieval:true}},
-  { question:"What is Magillem?",                              tag:"Products", retrieval_hint:{ui_question_key:"what_is_magillem",                    deterministic_retrieval:true}},
-  { question:"What is Arteris' multi-die solution?",           tag:"Solutions",retrieval_hint:{ui_question_key:"what_is_multi_die",                   deterministic_retrieval:true}},
-  { question:"Who are Arteris customers?",                     tag:"Company",  retrieval_hint:{ui_question_key:"who_are_arteris_customers",           deterministic_retrieval:true}},
-  { question:"Who is on the Arteris leadership team?",         tag:"Company",  retrieval_hint:{ui_question_key:"who_is_arteris_team",                 deterministic_retrieval:true}},
+  { question:"What is Arteris?",                               tag:"Company",   retrieval_hint:{ui_question_key:"what_is_arteris",                    deterministic_retrieval:true}},
+  { question:"Why does Arteris matter for modern SoC design?", tag:"Company",   retrieval_hint:{ui_question_key:"why_arteris_matters",                deterministic_retrieval:true}},
+  { question:"What products does Arteris offer?",              tag:"Products",  retrieval_hint:{ui_question_key:"what_products_does_arteris_offer",    deterministic_retrieval:true}},
+  { question:"What is FlexNoC?",                               tag:"Products",  retrieval_hint:{ui_question_key:"what_is_flexnoc",                     deterministic_retrieval:true}},
+  { question:"What is Ncore?",                                 tag:"Products",  retrieval_hint:{ui_question_key:"what_is_ncore",                       deterministic_retrieval:true}},
+  { question:"What is Magillem?",                              tag:"Products",  retrieval_hint:{ui_question_key:"what_is_magillem",                    deterministic_retrieval:true}},
+  { question:"What is Arteris' multi-die solution?",           tag:"Solutions", retrieval_hint:{ui_question_key:"what_is_multi_die",                   deterministic_retrieval:true}},
+  { question:"Who are Arteris customers?",                     tag:"Company",   retrieval_hint:{ui_question_key:"who_are_arteris_customers",           deterministic_retrieval:true}},
+  { question:"Who is on the Arteris leadership team?",         tag:"Company",   retrieval_hint:{ui_question_key:"who_is_arteris_team",                 deterministic_retrieval:true}},
   { question:"What is a network-on-chip (NoC)?",               tag:"Technology",retrieval_hint:{ui_question_key:"what_is_noc",                        deterministic_retrieval:true}},
-  { question:"What learning resources does Arteris provide?",  tag:"Resources",retrieval_hint:{ui_question_key:"what_resources_does_arteris_offer",   deterministic_retrieval:true}},
-  { question:"What is it like to work at Arteris?",            tag:"Careers",  retrieval_hint:{ui_question_key:"what_is_it_like_to_work_at_arteris", deterministic_retrieval:true}}
+  { question:"What learning resources does Arteris provide?",  tag:"Resources", retrieval_hint:{ui_question_key:"what_resources_does_arteris_offer",   deterministic_retrieval:true}},
+  { question:"What is it like to work at Arteris?",            tag:"Careers",   retrieval_hint:{ui_question_key:"what_is_it_like_to_work_at_arteris", deterministic_retrieval:true}}
 ];
 
-// ===== STATE =====
-const SESSION_ID = 'sess_' + Math.random().toString(36).slice(2) + Date.now();
+let authToken = sessionStorage.getItem('arteris_auth_token') || '';
+let SESSION_ID = 'sess_' + Math.random().toString(36).slice(2) + Date.now();
 const USER_ID = '';
 let debugEnabled = false;
 let metricsEnabled = false;
@@ -483,8 +547,15 @@ let lastDebugData = null;
 const sessionMetrics = {total:0,likes:0,dislikes:0,escalations:0,kb:0,general:0,clarification:0};
 const messages = [];
 
-// ===== DOM =====
 const $ = id => document.getElementById(id);
+const appShell     = $('app-shell');
+const authScreen   = $('auth-screen');
+const authForm     = $('auth-form');
+const authUsername = $('auth-username');
+const authPassword = $('auth-password');
+const authBtn      = $('auth-btn');
+const authError    = $('auth-error');
+
 const chatArea     = $('chat-area');
 const chatInput    = $('chat-input');
 const sendBtn      = $('send-btn');
@@ -501,17 +572,28 @@ const footerToggle = $('footer-toggle');
 const footerBody   = $('footer-body');
 const toastEl      = $('toast');
 
-// ===== THEME =====
 const savedTheme = localStorage.getItem('arteris-theme');
 const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
 document.documentElement.setAttribute('data-theme', savedTheme || (prefersDark ? 'dark' : 'light'));
+
 $('theme-btn').addEventListener('click', () => {
   const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
   document.documentElement.setAttribute('data-theme', next);
   localStorage.setItem('arteris-theme', next);
 });
 
-// ===== TOAST =====
+$('logout-btn').addEventListener('click', () => {
+  sessionStorage.removeItem('arteris_auth_token');
+  authToken = '';
+  appShell.hidden = true;
+  authScreen.style.display = 'flex';
+  authPassword.value = '';
+  authError.textContent = '';
+  chatArea.innerHTML = '';
+  messages.length = 0;
+  toast('Logged out');
+});
+
 let toastTimer;
 function toast(msg) {
   toastEl.textContent = msg;
@@ -520,7 +602,6 @@ function toast(msg) {
   toastTimer = setTimeout(() => toastEl.classList.remove('show'), 2600);
 }
 
-// ===== SAFE DOM =====
 function el(tag, cls) { const e = document.createElement(tag); if (cls) e.className = cls; return e; }
 function txt(node, text) { node.textContent = text; return node; }
 function safeUrl(raw) {
@@ -528,7 +609,52 @@ function safeUrl(raw) {
   return null;
 }
 
-// ===== SUGGESTIONS =====
+function authHeaders() {
+  return {
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer ' + authToken
+  };
+}
+
+async function login(username, password) {
+  const res = await fetch(LOGIN_API_URL, {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({username, password})
+  });
+
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw new Error(data.error || 'Login failed.');
+  }
+  if (!data.token) {
+    throw new Error('No token returned.');
+  }
+  authToken = data.token;
+  sessionStorage.setItem('arteris_auth_token', authToken);
+}
+
+authForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const username = authUsername.value.trim();
+  const password = authPassword.value;
+
+  authError.textContent = '';
+  authBtn.disabled = true;
+
+  try {
+    await login(username, password);
+    authScreen.style.display = 'none';
+    appShell.hidden = false;
+    startApp();
+    toast('Login successful');
+  } catch (err) {
+    authError.textContent = err.message || 'Login failed';
+  } finally {
+    authBtn.disabled = false;
+  }
+});
+
 function renderSuggestions() {
   sugGrid.innerHTML = '';
   PREDEFINED_QUESTIONS.forEach(q => {
@@ -545,7 +671,6 @@ function renderSuggestions() {
     sugGrid.appendChild(card);
   });
 }
-renderSuggestions();
 
 sugToggle.addEventListener('click', () => {
   suggestionsOpen = !suggestionsOpen;
@@ -554,40 +679,41 @@ sugToggle.addEventListener('click', () => {
   chevron.classList.toggle('open', suggestionsOpen);
 });
 
-// ===== FOOTER =====
 footerToggle.addEventListener('click', () => {
   const open = footerBody.hidden;
   footerBody.hidden = !open;
   footerToggle.setAttribute('aria-expanded', open);
 });
 
-// ===== DEBUG =====
 $('debug-btn').addEventListener('click', () => {
   debugEnabled = !debugEnabled;
   debugPanel.hidden = !debugEnabled;
   $('debug-btn').classList.toggle('active', debugEnabled);
   if (debugEnabled && lastDebugData) renderDebug(lastDebugData);
 });
+
 function renderDebug(data) {
   debugBody.innerHTML = '';
   if (!data) return;
   Object.entries(data).forEach(([k, v]) => {
-    const d = el('div'); txt(d, k + ': ' + JSON.stringify(v)); debugBody.appendChild(d);
+    const d = el('div');
+    txt(d, k + ': ' + JSON.stringify(v));
+    debugBody.appendChild(d);
   });
 }
 
-// ===== METRICS =====
 $('metrics-btn').addEventListener('click', () => {
   metricsEnabled = !metricsEnabled;
   metricsPanel.hidden = !metricsEnabled;
   $('metrics-btn').classList.toggle('active', metricsEnabled);
   if (metricsEnabled) fetchMetrics();
 });
+
 function renderMetrics(remote) {
   metricsGrid.innerHTML = '';
 
-  // --- Session group ---
-  const sessionLabel = el('div','metrics-group-label'); txt(sessionLabel,'This Session');
+  const sessionLabel = el('div','metrics-group-label');
+  txt(sessionLabel,'This Session');
   metricsGrid.appendChild(sessionLabel);
 
   const sessionItems = [
@@ -599,21 +725,24 @@ function renderMetrics(remote) {
     ['LLM answers', sessionMetrics.general],
     ['Clarifications', sessionMetrics.clarification]
   ];
-  const sessionRow = el('div',''); sessionRow.style.cssText='display:flex;flex-wrap:wrap;gap:6px;width:100%';
+
+  const sessionRow = el('div','');
+  sessionRow.style.cssText='display:flex;flex-wrap:wrap;gap:6px;width:100%';
   sessionItems.forEach(([k, v]) => {
     const chip = el('div','metric-chip');
     chip.textContent = k + ': ';
-    const s = el('span'); txt(s, v); chip.appendChild(s);
+    const s = el('span');
+    txt(s, v);
+    chip.appendChild(s);
     sessionRow.appendChild(chip);
   });
   metricsGrid.appendChild(sessionRow);
 
-  // --- Persistent group (from backend) ---
   if (remote && Object.keys(remote).length > 0) {
-    const persistLabel = el('div','metrics-group-label'); txt(persistLabel,'All Time');
+    const persistLabel = el('div','metrics-group-label');
+    txt(persistLabel,'All Time');
     metricsGrid.appendChild(persistLabel);
 
-    // Clean up snake_case keys to readable labels
     const labelMap = {
       total_requests:'Total Requests', unique_users:'Unique Users',
       active_sessions:'Active Sessions', positive_feedback:'Positive Feedback',
@@ -621,157 +750,181 @@ function renderMetrics(remote) {
       deterministic_kb_responses:'Deterministic KB', kb_rag_responses:'KB RAG',
       general_llm_responses:'General LLM', clarification_responses:'Clarifications'
     };
-    const persistRow = el('div',''); persistRow.style.cssText='display:flex;flex-wrap:wrap;gap:6px;width:100%';
+
+    const persistRow = el('div','');
+    persistRow.style.cssText='display:flex;flex-wrap:wrap;gap:6px;width:100%';
     Object.entries(remote).forEach(([k, v]) => {
       const chip = el('div','metric-chip');
       const label = labelMap[k] || k.replace(/_/g,' ');
       chip.textContent = label + ': ';
-      const s = el('span'); txt(s, v); chip.appendChild(s);
+      const s = el('span');
+      txt(s, v);
+      chip.appendChild(s);
       persistRow.appendChild(chip);
     });
     metricsGrid.appendChild(persistRow);
   }
 }
+
 async function fetchMetrics() {
   renderMetrics(null);
   try {
-    const res = await fetch(METRICS_API_URL);
+    const res = await fetch(METRICS_API_URL, {
+      method:'GET',
+      headers: authHeaders()
+    });
+    if (res.status === 401) {
+      handleUnauthorized();
+      return;
+    }
     if (res.ok) {
       const data = await res.json();
       renderMetrics(data);
     }
-  } catch { /* metrics panel stays with session data only */ }
+  } catch {}
 }
 
-// ===== WELCOME =====
 function addWelcome() {
   addAssistantMessage({
-    id:'welcome', response_id:'welcome',
+    id:'welcome',
+    response_id:'welcome',
     text:"Hi, I'm the Arteris IP assistant. How can I help you today?",
-    timestamp:new Date(), mode:null, sources:[], original_user_message:''
+    timestamp:new Date(),
+    mode:null,
+    sources:[],
+    original_user_message:''
   });
 }
 
-// ===== USER MESSAGE =====
 function addUserMessage(text) {
   const msg = {id:'u_'+Date.now(), role:'user', text, timestamp:new Date()};
   messages.push(msg);
   const row = el('div','msg-row user');
   const col = el('div','msg-col');
-  const bubble = el('div','msg-bubble'); txt(bubble, text);
+  const bubble = el('div','msg-bubble');
+  txt(bubble, text);
   const meta = el('div','msg-meta');
-  const time = el('span','msg-time'); txt(time, fmtTime(msg.timestamp));
+  const time = el('span','msg-time');
+  txt(time, fmtTime(msg.timestamp));
   meta.appendChild(time);
-  col.appendChild(bubble); col.appendChild(meta);
+  col.appendChild(bubble);
+  col.appendChild(meta);
   row.appendChild(col);
   chatArea.appendChild(row);
   scrollBottom();
 }
 
-// ===== ASSISTANT MESSAGE =====
 function addAssistantMessage(data) {
   messages.push({...data, role:'assistant'});
   const row = el('div','msg-row assistant');
   if (data.id !== 'welcome') {
-    const avatar = el('div','msg-avatar'); txt(avatar,'IP');
+    const avatar = el('div','msg-avatar');
+    txt(avatar,'IP');
     row.appendChild(avatar);
   }
   const col = el('div','msg-col');
-  const bubble = el('div','msg-bubble'); txt(bubble, data.text);
+  const bubble = el('div','msg-bubble');
+  txt(bubble, data.text);
   col.appendChild(bubble);
+
   const meta = el('div','msg-meta');
-  const time = el('span','msg-time'); txt(time, fmtTime(data.timestamp));
+  const time = el('span','msg-time');
+  txt(time, fmtTime(data.timestamp));
   meta.appendChild(time);
+
   if (data.mode) {
     const badge = el('span','msg-mode-badge');
     txt(badge, data.mode.replace(/_/g,' '));
     meta.appendChild(badge);
   }
   col.appendChild(meta);
+
   if (data.sources && data.sources.length > 0) {
     const srcWrap = el('div','msg-sources');
     data.sources.forEach(s => {
       const safe = safeUrl(s.source_url || '');
       if (safe) {
         const a = el('a','msg-source-link');
-        a.href = safe; a.target = '_blank'; a.rel = 'noopener noreferrer';
+        a.href = safe;
+        a.target = '_blank';
+        a.rel = 'noopener noreferrer';
         txt(a, '↗ ' + (s.topic || safe));
         srcWrap.appendChild(a);
       }
     });
     col.appendChild(srcWrap);
   }
-  if (data.response_id) col.appendChild(buildActions(data));
+
+  if (data.response_id && data.id !== 'welcome') col.appendChild(buildActions(data));
   row.appendChild(col);
   chatArea.appendChild(row);
   scrollBottom();
 }
 
-// ===== ERROR MESSAGE =====
 function addErrorMessage(text) {
   const row = el('div','msg-row error');
   const avatar = el('div','msg-avatar');
   avatar.style.background = '#dc2626';
   txt(avatar,'!');
   const col = el('div','msg-col');
-  const bubble = el('div','msg-bubble'); txt(bubble, text);
+  const bubble = el('div','msg-bubble');
+  txt(bubble, text);
   col.appendChild(bubble);
+  row.appendChild(avatar);
   row.appendChild(col);
   chatArea.appendChild(row);
   scrollBottom();
 }
 
-// ===== ACTION BUTTONS =====
 function buildActions(data) {
   const wrap = el('div','msg-actions');
 
-  // Copy
   const copyBtn = el('button','act-btn');
   copyBtn.setAttribute('aria-label','Copy response');
   txt(copyBtn,'📋 Copy');
   copyBtn.addEventListener('click', () => {
     navigator.clipboard.writeText(data.text).then(() => {
-      copyBtn.classList.add('copied'); toast('Copied to clipboard');
+      copyBtn.classList.add('copied');
+      toast('Copied to clipboard');
       setTimeout(() => copyBtn.classList.remove('copied'), 2000);
     });
   });
   wrap.appendChild(copyBtn);
 
-  // Like
   const likeBtn = el('button','act-btn');
   likeBtn.setAttribute('aria-label','Helpful');
   txt(likeBtn,'👍 Like');
   likeBtn.addEventListener('click', () => {
     if (likeBtn.classList.contains('liked')) return;
-    likeBtn.classList.add('liked'); dislikeBtn.classList.remove('disliked');
+    likeBtn.classList.add('liked');
+    dislikeBtn.classList.remove('disliked');
     sessionMetrics.likes++;
     if (metricsEnabled) renderMetrics(null);
     postFeedback(data.response_id, 'like');
   });
   wrap.appendChild(likeBtn);
 
-  // Dislike
   const dislikeBtn = el('button','act-btn');
   dislikeBtn.setAttribute('aria-label','Not helpful');
   txt(dislikeBtn,'👎 Dislike');
   dislikeBtn.addEventListener('click', () => {
     if (dislikeBtn.classList.contains('disliked')) return;
-    dislikeBtn.classList.add('disliked'); likeBtn.classList.remove('liked');
+    dislikeBtn.classList.add('disliked');
+    likeBtn.classList.remove('liked');
     sessionMetrics.dislikes++;
     if (metricsEnabled) renderMetrics(null);
     postFeedback(data.response_id, 'dislike');
   });
   wrap.appendChild(dislikeBtn);
 
-  // Escalate
   const escBtn = el('button','act-btn');
   escBtn.setAttribute('aria-label','Escalate to expert');
   txt(escBtn,'🔗 Escalate');
   escBtn.addEventListener('click', () => {
     postEscalate(data);
-    // Show inline escalation confirmation in chat
     const escRow = el('div','msg-row assistant');
-    const escAvatar = el('div','msg-avatar'); txt(escAvatar,'IP');
+    const escAvatar = el('div','msg-avatar');
+    txt(escAvatar,'IP');
     const escCol = el('div','msg-col');
     const escBubble = el('div','msg-bubble');
     escBubble.style.background = 'rgba(0,48,135,.07)';
@@ -779,138 +932,238 @@ function buildActions(data) {
     escBubble.style.color = 'var(--navy)';
     txt(escBubble,'✅ An expert will join the conversation shortly.');
     escCol.appendChild(escBubble);
-    escRow.appendChild(escAvatar); escRow.appendChild(escCol);
+    escRow.appendChild(escAvatar);
+    escRow.appendChild(escCol);
     chatArea.appendChild(escRow);
     scrollBottom();
     escBtn.disabled = true;
     escBtn.style.opacity = '.5';
   });
   wrap.appendChild(escBtn);
+
   return wrap;
 }
 
-// ===== TYPING =====
 function showTyping() {
   let row = $('typing-row');
   if (!row) {
-    row = el('div','typing-row'); row.id = 'typing-row';
-    row.setAttribute('role','status'); row.setAttribute('aria-label','Arteris IP Assistant is typing');
-    const av = el('div','msg-avatar'); txt(av,'IP');
+    row = el('div','typing-row');
+    row.id = 'typing-row';
+    row.setAttribute('role','status');
+    row.setAttribute('aria-label','Arteris IP Assistant is typing');
+    const av = el('div','msg-avatar');
+    txt(av,'IP');
     const tb = el('div','typing-bubble');
     [1,2,3].forEach(() => tb.appendChild(el('div','dot')));
-    row.appendChild(av); row.appendChild(tb);
+    row.appendChild(av);
+    row.appendChild(tb);
     chatArea.appendChild(row);
   }
   row.style.display = 'flex';
   scrollBottom();
 }
+
 function hideTyping() {
   const row = $('typing-row');
-  if (row) { row.remove(); }
+  if (row) row.remove();
 }
 
-// ===== SCROLL =====
-function scrollBottom() { requestAnimationFrame(() => { chatArea.scrollTop = chatArea.scrollHeight; }); }
-function fmtTime(d) { return (d instanceof Date ? d : new Date(d)).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}); }
+function scrollBottom() {
+  requestAnimationFrame(() => {
+    chatArea.scrollTop = chatArea.scrollHeight;
+  });
+}
 
-// ===== SEND =====
+function fmtTime(d) {
+  return (d instanceof Date ? d : new Date(d)).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+}
+
+function handleUnauthorized() {
+  sessionStorage.removeItem('arteris_auth_token');
+  authToken = '';
+  appShell.hidden = true;
+  authScreen.style.display = 'flex';
+  authError.textContent = 'Your session expired. Please log in again.';
+  toast('Session expired');
+}
+
 async function sendMessage(text, retrieval_hint) {
   const trimmed = text.trim();
   if (!trimmed || sending) return;
-  sending = true; sendBtn.disabled = true;
+  if (!authToken) {
+    handleUnauthorized();
+    return;
+  }
+
+  sending = true;
+  sendBtn.disabled = true;
   addUserMessage(trimmed);
+
   if (text === chatInput.value) {
-    chatInput.value = ''; chatInput.style.height = 'auto';
+    chatInput.value = '';
+    chatInput.style.height = 'auto';
     charCount.textContent = '0 / 4000';
   }
+
   showTyping();
   sessionMetrics.total++;
-  const body = {session_id:SESSION_ID, user_id:USER_ID, message:trimmed, debug:debugEnabled};
+
+  const body = {
+    session_id: SESSION_ID,
+    user_id: USER_ID,
+    message: trimmed,
+    debug: debugEnabled
+  };
   if (retrieval_hint) body.retrieval_hint = retrieval_hint;
+
   let attempt = 0;
   while (attempt < 2) {
     try {
       const res = await fetch(CHAT_API_URL, {
-        method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)
+        method:'POST',
+        headers: authHeaders(),
+        body: JSON.stringify(body)
       });
+
+      if (res.status === 401) {
+        hideTyping();
+        handleUnauthorized();
+        sending = false;
+        return;
+      }
+
       if (!res.ok) throw new Error('backend:' + res.status);
+
       const data = await res.json();
       hideTyping();
+
       const mode = data.mode || null;
-      if (mode === 'kb' || mode === 'deterministic_kb' || mode === 'kb_rag') sessionMetrics.kb++;
+      if (mode === 'deterministic_kb' || mode === 'kb_rag') sessionMetrics.kb++;
       else if (mode === 'clarification') sessionMetrics.clarification++;
       else sessionMetrics.general++;
+
       addAssistantMessage({
-        id:'a_'+Date.now(), response_id:data.response_id||null,
+        id:'a_'+Date.now(),
+        response_id:data.response_id || null,
         text:data.response || data.clarification_question || 'No response received.',
         timestamp:data.timestamp ? new Date(data.timestamp) : new Date(),
-        mode, sources:data.sources||[], original_user_message:trimmed
+        mode,
+        sources:data.sources || [],
+        original_user_message:trimmed
       });
+
       if (debugEnabled) {
-        lastDebugData = {mode, used_knowledge:data.used_knowledge, sources:data.sources, retrieval_hint:retrieval_hint||null};
+        lastDebugData = {
+          mode,
+          used_knowledge:data.used_knowledge,
+          sources:data.sources,
+          retrieval_hint:retrieval_hint || null
+        };
         renderDebug(lastDebugData);
       }
+
       if (metricsEnabled) renderMetrics(null);
       break;
     } catch(err) {
       attempt++;
       if (attempt >= 2) {
         hideTyping();
-        addErrorMessage(err.message.startsWith('backend')
-          ? 'The server returned an error. Please try again.'
-          : 'Could not reach the server. Check your connection and try again.');
+        addErrorMessage(
+          err.message.startsWith('backend')
+            ? 'The server returned an error. Please try again.'
+            : 'Could not reach the server. Check your connection and try again.'
+        );
       }
     }
   }
+
   sending = false;
   sendBtn.disabled = chatInput.value.trim().length === 0;
   chatInput.focus();
 }
 
-// ===== FEEDBACK =====
 async function postFeedback(response_id, feedback) {
+  if (!authToken) return;
   try {
-    await fetch(FEEDBACK_API_URL, {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({session_id:SESSION_ID, response_id, feedback})
+    const res = await fetch(FEEDBACK_API_URL, {
+      method:'POST',
+      headers: authHeaders(),
+      body: JSON.stringify({session_id:SESSION_ID, response_id, feedback})
     });
+    if (res.status === 401) {
+      handleUnauthorized();
+      return;
+    }
     toast(feedback === 'like' ? '👍 Feedback saved — thank you!' : '👎 Feedback saved — noted.');
-  } catch { toast('Could not send feedback.'); }
+  } catch {
+    toast('Could not send feedback.');
+  }
 }
 
-// ===== ESCALATE =====
 async function postEscalate(data) {
+  if (!authToken) return;
   try {
-    await fetch(ESCALATE_API_URL, {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({session_id:SESSION_ID, user_message:data.original_user_message||'', assistant_response:data.text})
+    const res = await fetch(ESCALATE_API_URL, {
+      method:'POST',
+      headers: authHeaders(),
+      body: JSON.stringify({
+        session_id:SESSION_ID,
+        user_message:data.original_user_message || '',
+        assistant_response:data.text
+      })
     });
+    if (res.status === 401) {
+      handleUnauthorized();
+      return;
+    }
     sessionMetrics.escalations++;
     if (metricsEnabled) renderMetrics(null);
-  } catch { /* escalation still shows UI message even if request fails */ }
+  } catch {}
 }
 
-// ===== CLEAR =====
 clearBtn.addEventListener('click', () => {
-  messages.length = 0; chatArea.innerHTML = '';
-  addWelcome(); chatInput.focus(); toast('Chat cleared.');
+  messages.length = 0;
+  chatArea.innerHTML = '';
+  SESSION_ID = 'sess_' + Math.random().toString(36).slice(2) + Date.now();
+  addWelcome();
+  chatInput.focus();
+  toast('Chat cleared.');
 });
 
-// ===== INPUT =====
 chatInput.addEventListener('input', () => {
   charCount.textContent = chatInput.value.length + ' / 4000';
   sendBtn.disabled = chatInput.value.trim().length === 0 || sending;
   chatInput.style.height = 'auto';
   chatInput.style.height = Math.min(chatInput.scrollHeight, 120) + 'px';
 });
+
 chatInput.addEventListener('keydown', e => {
-  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(chatInput.value); }
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendMessage(chatInput.value);
+  }
 });
+
 sendBtn.addEventListener('click', () => sendMessage(chatInput.value));
 
-// ===== INIT =====
-addWelcome();
-chatInput.focus();
+let appStarted = false;
+function startApp() {
+  if (appStarted) return;
+  appStarted = true;
+  renderSuggestions();
+  addWelcome();
+  chatInput.focus();
+}
+
+if (authToken) {
+  authScreen.style.display = 'none';
+  appShell.hidden = false;
+  startApp();
+} else {
+  authScreen.style.display = 'flex';
+  appShell.hidden = true;
+  authUsername.focus();
+}
 </script>
 </body>
 </html>
