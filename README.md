@@ -439,3 +439,15 @@ This architecture ensures:
 - scalability
 - maintainability
 - traceability
+
+
+# 13 Run locally
+```
+cd ~/arteris-chatbot 
+python3 -m http.server 8001
+
+```
+
+then, open http://localhost:8001/
+
+
